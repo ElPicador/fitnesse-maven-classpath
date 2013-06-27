@@ -12,35 +12,35 @@ import static junit.framework.Assert.assertTrue;
 
 public class MavenClasspathExtractorTest {
 
-    private MavenClasspathExtractor mavenClasspathExtractor;
-    private File pomFile;
+  private MavenClasspathExtractor mavenClasspathExtractor;
+  private File pomFile;
 
-    @Before
-    public void setUp() throws PlexusContainerException {
-        pomFile = new File(MavenClasspathExtractor.class
-                .getClassLoader().getResource("MavenClasspathWidget/pom.xml").getFile());
+  @Before
+  public void setUp() throws PlexusContainerException {
+    pomFile = new File(MavenClasspathExtractor.class
+        .getClassLoader().getResource("MavenClasspathWidget/pom.xml").getFile());
 
-        mavenClasspathExtractor = new MavenClasspathExtractor();
+    mavenClasspathExtractor = new MavenClasspathExtractor();
+  }
+
+  @Test
+  public void extractedClasspathIncludesTestScopeDependencies() throws MavenClasspathExtractionException {
+    List<String> classpathEntries = mavenClasspathExtractor.extractClasspathEntries(pomFile);
+    StringBuffer sb = new StringBuffer();
+    for (String cpEntry : classpathEntries) {
+      sb.append(cpEntry);
     }
 
-    @Test
-    public void extractedClasspathIncludesTestScopeDependencies() throws MavenClasspathExtractionException {
-        List<String> classpathEntries = mavenClasspathExtractor.extractClasspathEntries(pomFile);
-        StringBuffer sb = new StringBuffer();
-        for (String cpEntry : classpathEntries) {
-            sb.append(cpEntry);
-        }
+    String path = sb.toString();
 
-        String path = sb.toString();
+    assertEquals(3, classpathEntries.size());
+    assertTrue(path.contains("commons-lang"));
+  }
 
-        assertEquals(3, classpathEntries.size());
-        assertTrue(path.contains("commons-lang"));
-    }
+  @Test(expected = MavenClasspathExtractionException.class)
+  public void failsOnNonExistingPom() throws MavenClasspathExtractionException {
+    mavenClasspathExtractor.extractClasspathEntries(new File("test-pom.xml"));
+  }
 
-    @Test(expected = MavenClasspathExtractionException.class)
-    public void failsOnNonExistingPom() throws MavenClasspathExtractionException {
-        mavenClasspathExtractor.extractClasspathEntries(new File("test-pom.xml"));
-    }
 
-    
 }
